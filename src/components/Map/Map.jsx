@@ -44,15 +44,14 @@ const Map = ({ center, markers, onClick }) => {
         onClick={onClick}
         options={defaultOptions}
       >
-        {markers.length
-          ? markers.map(({ lat, lng }, index) => (
-              <CustomMarker
-                key={index}
-                position={{ lat, lng }}
-                label={`${index + 1}`}
-              />
-            ))
-          : null}
+        {markers.length &&
+          markers.map(({ lat, lng }, index) => (
+            <CustomMarker
+              key={`${lat}${lng}`}
+              position={{ lat, lng }}
+              label={`${index + 1}`}
+            />
+          ))}
       </GoogleMap>
     </div>
   );

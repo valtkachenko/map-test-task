@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
-import { doc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { Map } from './components/Map/Map';
-import { db } from './firebase';
+import { getLatLng } from './helpers';
+import { useQuests } from './hooks';
 import './App.css';
 
 const API_KEY = process.env.REACT_APP_API_KEY;
@@ -19,39 +19,24 @@ const App = () => {
     id: 'google-map-script',
     googleMapsApiKey: API_KEY,
   });
+  const { add, update } = useQuests();
 
   const onClick = async (event) => {
     try {
       const questMarker = {
-        location: {
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng(),
-        },
+        location: getLatLng(event),
         timestamp: Date.now(),
       };
+      const nextQuest = markers.length + 1;
 
       if (!document) {
-        const resDoc = await addDoc(collection(db, 'quests'), {
-          [`quest_${markers.length + 1}`]: questMarker,
-        });
+        const resDoc = await add(nextQuest, questMarker);
         setDocument(resDoc.id);
       } else {
-        await updateDoc(
-          doc(db, 'quests', document),
-          {
-            [`quest_${markers.length + 1}`]: questMarker,
-          },
-          { merge: true }
-        );
+        await update(nextQuest, questMarker, document);
       }
 
-      setMarkers([
-        ...markers,
-        {
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng(),
-        },
-      ]);
+      setMarkers([...markers, getLatLng(event)]);
     } catch (err) {
       console.log(err);
     }
